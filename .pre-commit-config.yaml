@@ -1,0 +1,37 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+        args: ['--maxkb=2000']
+      - id: requirements-txt-fixer
+      - id: detect-private-key
+      - id: check-merge-conflict
+
+  - repo: https://github.com/pycqa/isort
+    rev: 8.0.0
+    hooks:
+      - id: isort
+        args: [--profile, black]
+
+  - repo: local
+    hooks:
+      - id: check-branch-name
+        name: Check Branch Name
+        entry: |
+          python -c "
+          import sys, re, subprocess
+          prefixes = ['feature', 'bugfix', 'hotfix', 'docs', 'chore', 'refactor', 'perf', 'test', 'ci']
+          b = subprocess.check_output(['git', 'symbolic-ref', '--short', 'HEAD'], encoding='utf-8').strip()
+          p = rf'^({'|'.join(prefixes)})/[a-z0-9-]+$'
+          if re.match(p, b):
+              sys.exit(0)
+          else:
+              print(f'ERROR: Invalid branch \"{b}\". Use: <prefix>/kebab-case')
+              print(f'Allowed prefixes: {prefixes}')
+              sys.exit(1)
+          "
+        language: system
+        pass_filenames: false
